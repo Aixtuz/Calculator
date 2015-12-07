@@ -16,6 +16,9 @@
 // 正序压入数组元素
 - (void)pushOperand:(double)operand;
 
+// 逆序弹出数组元素
+- (double)popOperand;
+
 // 执行运算
 - (double)performOperation:(NSString *)operation;
 

@@ -88,6 +88,10 @@
         // C 操作符, 执行 Clear 方法;
         [self clear];
         
+    } else if ([operation isEqualToString:@"←"]) {
+        // 回退符, 执行 backspace 方法;
+        [self backspace];
+    
     } else {
         
         // 其他操作符: 自动将当前显示数值存入数组, 用于后续运算;
@@ -137,6 +141,28 @@
     NSString *rpnStr = [NSString stringWithFormat:@"%@ ", str];
     // 拼接显示
     self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:rpnStr];
+}
+
+// 回退操作
+- (void)backspace {
+
+    NSUInteger index = self.display.text.length - 1;
+    if (index > 0) {
+        // 回退 = 长度减 1
+        self.display.text = [self.display.text substringToIndex:index];
+        
+    } else {
+        // π 回退, 需删除之前的 π 值和显示
+        if ([self.display.text isEqualToString:@"π"]) {
+            // 删除数组元素
+            [self.brain popOperand];
+            // 删除 rpnLabel 显示 (rpnLabel 比 display 多显示个空格);
+            NSUInteger rpnIndex = self.rpnLabel.text.length - 2;
+            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:rpnIndex];
+        }
+        // 个位再回退归 0
+        self.display.text = @"0";
+    }
 }
 
 // 清空状态
