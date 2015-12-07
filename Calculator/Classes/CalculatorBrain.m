@@ -53,6 +53,17 @@
     } else if ([operation isEqualToString:@"/"]) {
         double divisor = [self popOperand];
         result = [self popOperand] / divisor;
+        
+    } else if ([operation isEqualToString:@"sin"]) {
+        // lastObject 即为栈顶元素
+        result = sin([self popOperand]);
+    
+    } else if ([operation isEqualToString:@"sin"]) {
+        result = cos([self popOperand]);
+    
+    } else if ([operation isEqualToString:@"sqrt"]) {
+        result = sqrt([self popOperand]);
+        
     }
     // 结果压入数组, 待后续运算;
     [self pushOperand:result];

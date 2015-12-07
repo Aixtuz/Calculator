@@ -31,35 +31,33 @@
 // 监听数字点击
 - (IBAction)digitPressed:(UIButton *)sender {
     
-    // 点击数字按钮
+    // 接收数值符
     NSString *digit = sender.currentTitle;
     //FIXME: 检查数字键点击
     NSLog(@"user touched: %@", digit);
     
-    // 判断是否首位输入
+    // 非首位输入
     if (self.userIsInTheMiddleOfTypingANumber) {
-        
-        // 判断是否重复小数点
-        if ([sender.currentTitle isEqualToString:@"."] && [self.display.text containsString:@"."]) {
-            // 重复小数点, 忽略;
+        // 重复".", 则忽略
+        if ([digit isEqualToString:@"."] && [self.display.text containsString:@"."]) {
             return;
             
         } else {
-            // 非重复小数点, 拼接显示;
+            // 非重复".", 则拼接显示;
             self.display.text = [self.display.text stringByAppendingString:digit];
         }
         
-    } else if ([sender.currentTitle isEqualToString:@"."]) {
-        // 首位输入小数点, 拼接 0 前缀, 变更标识;
-        self.display.text = [self.display.text stringByAppendingString:digit];
+    } else if ([digit isEqualToString:@"."]) {
+        // 首位输入".", 补全 0 前缀, 变更首位标识;
+        self.display.text = @"0.";
         self.userIsInTheMiddleOfTypingANumber = YES;
         
-    } else if ([sender.currentTitle isEqualToString:@"0"]) {
-        // 首位输入 0, 忽略;
-        return;
+    } else if ([digit isEqualToString:@"0"]) {
+        // 首位输入"0", 赋值 0, 但不变更首位标识;
+        self.display.text = @"0";
         
     } else {
-        // 首位输入其他, 直接赋值, 变更标识;
+        // 首位输入其他, 直接赋值, 变更首位标识;
         self.display.text = digit;
         self.userIsInTheMiddleOfTypingANumber = YES;
     }
@@ -78,25 +76,33 @@
     
     // 接收操作符
     NSString *operation = sender.currentTitle;
-    // 执行运算
-    double result = [self.brain performOperation:operation];
-    // 显示结果
-    self.display.text = [NSString stringWithFormat:@"%g", result];
+    
+    // π 操作符, 则显示并压入
+    if ([operation isEqualToString:@"π"]) {
+        self.display.text = [NSString stringWithFormat:@"%f", M_PI];
+        [self enterPressed];
+        
+    } else {
+        // 其他操作符, 则执行运算, 显示结果;
+        double result = [self.brain performOperation:operation];
+        self.display.text = [NSString stringWithFormat:@"%g", result];
+    }
 }
 
 // 监听确认符点击
 - (IBAction)enterPressed {
     
-    //FIXME: 检查确认符点击
+    //FIXME: 检查 Enter 执行
     NSLog(@"user touched: Enter");
     
     // 当前显示数值存入数组, 用于后续运算;
     [self.brain pushOperand:[self.display.text doubleValue]];
     
+    //!!!: 连续点击 Enter 实现当前操作数重复存入, 故不可归 0;
     // Enter 后显示归 0, 可视化确认点击操作, 并简化后续 0或. 开头输入的判断
-    self.display.text = @"0";
+    // self.display.text = @"0";
     
-    // 下次数字输入为首位
+    // 重置首位标识
     self.userIsInTheMiddleOfTypingANumber = NO;
 }
 
