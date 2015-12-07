@@ -52,7 +52,9 @@
         
     } else if ([operation isEqualToString:@"/"]) {
         double divisor = [self popOperand];
-        result = [self popOperand] / divisor;
+        if (divisor) {
+            result = [self popOperand] / divisor;
+        }
         
     } else if ([operation isEqualToString:@"sin"]) {
         // lastObject 即为栈顶元素

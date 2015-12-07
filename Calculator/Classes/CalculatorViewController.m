@@ -69,27 +69,37 @@
     //FIXME: 检查操作符点击
     NSLog(@"user touched: %@", sender.currentTitle);
     
-    // 数字输入中, 点击操作符, 自动将当前显示数值存入数组, 用于后续运算;
-    if (self.userIsInTheMiddleOfTypingANumber) {
-        [self enterPressed];
-    }
-    
     // 接收操作符
     NSString *operation = sender.currentTitle;
-    // 拼接显示逆波兰式
-    [self rpnWithStr:operation];
     
-    // π 操作符, 则显示并压入
     if ([operation isEqualToString:@"π"]) {
-        self.display.text = [NSString stringWithFormat:@"%f", M_PI];
+        
+        // π 操作符, 先将之前当前显示压入数组;
+        //!!!: 避免首位 π 将默认 0 压入, 需判断非 0 非 π 才执行, 避免冗余数值压入数组;
+        if (![self.display.text isEqualToString:@"0"] && ![self.display.text isEqualToString:@"π"]) {
+            [self enterPressed];
+        }
+        
+        // 再将 π 操作符自身, 显示并压入;
+        self.display.text = @"π";
         [self enterPressed];
         
     } else if ([operation isEqualToString:@"C"]) {
-        // 执行 Clear 方法
+        // C 操作符, 执行 Clear 方法;
         [self clear];
         
     } else {
-        // 其他操作符, 则执行运算, 显示结果;
+        
+        // 其他操作符: 自动将当前显示数值存入数组, 用于后续运算;
+        //!!!: 之前为避免重复输入 0, 故首位 0 不改变标识, 因此补充 0 做操作数直接 Enter 时的入栈操作;
+        if (self.userIsInTheMiddleOfTypingANumber || [self.display.text isEqualToString:@"0"]) {
+            [self enterPressed];
+        }
+        
+        // 拼接显示逆波兰式
+        [self rpnWithStr:operation];
+        
+        // 执行运算, 显示结果;
         double result = [self.brain performOperation:operation];
         self.display.text = [NSString stringWithFormat:@"%g", result];
     }
@@ -101,11 +111,17 @@
     //FIXME: 检查 Enter 执行
     NSLog(@"user touched: Enter");
     
-    // 当前显示数值存入数组, 用于后续运算;
-    [self.brain pushOperand:[self.display.text doubleValue]];
-    
     // 拼接显示逆波兰式
-    [self rpnWithStr:self.display.text];
+    if ([self.display.text isEqualToString:@"π"]) {
+        // π 操作符, 存入 π 值, 显示 π 字符;
+        [self.brain pushOperand:M_PI];
+        [self rpnWithStr:@"π"];
+        
+    } else {
+        // 其他操作数, 存入数组, 用于后续运算;
+        [self.brain pushOperand:[self.display.text doubleValue]];
+        [self rpnWithStr:self.display.text];
+    }
     
     //!!!: 连续点击 Enter 实现当前操作数重复存入, 故不可归 0;
     // Enter 后显示归 0, 可视化确认点击操作, 并简化后续 0或. 开头输入的判断

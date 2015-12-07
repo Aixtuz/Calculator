@@ -406,6 +406,7 @@
                                 <color key="backgroundColor" red="0.79880598520000001" green="1" blue="0.682708015" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstItem="DYm-tw-Ljq" firstAttribute="top" secondItem="jXb-Wq-HWh" secondAttribute="top" id="2cY-qU-Xm1"/>
+                                    <constraint firstAttribute="trailing" secondItem="R3T-Hc-VEI" secondAttribute="trailing" constant="10" id="5YB-nw-yKv"/>
                                     <constraint firstItem="P9o-ps-NzC" firstAttribute="leading" secondItem="LuE-E7-DeG" secondAttribute="leading" id="777-pw-4ng"/>
                                     <constraint firstItem="aLL-7B-MVR" firstAttribute="top" secondItem="dgL-yY-y8p" secondAttribute="top" id="8mN-rr-W04"/>
                                     <constraint firstItem="gFi-QO-b0R" firstAttribute="top" secondItem="2Wx-oN-CWP" secondAttribute="bottom" constant="20" id="BF4-gW-Gbu"/>
@@ -452,7 +453,6 @@
                                     <constraint firstItem="jXb-Wq-HWh" firstAttribute="leading" secondItem="dNS-iY-9vQ" secondAttribute="leading" id="q7p-BC-399"/>
                                     <constraint firstItem="2Wx-oN-CWP" firstAttribute="top" secondItem="dgL-yY-y8p" secondAttribute="bottom" constant="20" id="qLJ-3F-ONl"/>
                                     <constraint firstItem="R3T-Hc-VEI" firstAttribute="top" secondItem="RA7-2h-KoY" secondAttribute="bottom" constant="10" id="qYA-Qy-zNl"/>
-                                    <constraint firstAttribute="trailing" secondItem="R3T-Hc-VEI" secondAttribute="trailing" constant="10" id="s5m-gV-sr3"/>
                                     <constraint firstItem="LuE-E7-DeG" firstAttribute="leading" secondItem="aLL-7B-MVR" secondAttribute="trailing" constant="10" id="sMt-bx-GYE"/>
                                     <constraint firstItem="dNS-iY-9vQ" firstAttribute="top" secondItem="JmJ-Ea-47O" secondAttribute="top" id="smZ-MV-ZIq"/>
                                     <constraint firstItem="LTD-Ef-V39" firstAttribute="top" secondItem="gFi-QO-b0R" secondAttribute="top" id="vPw-kG-RAg"/>
