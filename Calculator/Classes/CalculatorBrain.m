@@ -70,6 +70,16 @@
     return result;
 }
 
+// 清空状态
+- (void)clear {
+    
+    self.operand = 0;
+    [self.operandStack removeAllObjects];
+    
+    //FIXME: 检查模型清空结果
+    NSLog(@"[模型清空] operand:%f - 数组计数:%ld", self.operand, self.operandStack.count);
+}
+
 #pragma mark - lazy instantiation
 
 - (NSMutableArray *)operandStack {

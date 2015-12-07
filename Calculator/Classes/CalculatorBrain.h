@@ -10,7 +10,7 @@
 
 @interface CalculatorBrain : NSObject
 
-///  数值
+///  操作数
 @property (nonatomic, assign) double operand;
 
 // 正序压入数组元素
@@ -18,5 +18,8 @@
 
 // 执行运算
 - (double)performOperation:(NSString *)operation;
+
+// 清空状态
+- (void)clear;
 
 @end

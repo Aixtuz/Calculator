@@ -84,6 +84,10 @@
         self.display.text = [NSString stringWithFormat:@"%f", M_PI];
         [self enterPressed];
         
+    } else if ([operation isEqualToString:@"C"]) {
+        // 执行 Clear 方法
+        [self clear];
+        
     } else {
         // 其他操作符, 则执行运算, 显示结果;
         double result = [self.brain performOperation:operation];
@@ -119,10 +123,22 @@
     self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:rpnStr];
 }
 
+// 清空状态
+- (void)clear {
+    
+    self.display.text = @"0";
+    self.rpnLabel.text = @"";
+    self.userIsInTheMiddleOfTypingANumber = NO;
+    
+    // 模型的 Clear 方法
+    [self.brain clear];
+}
+
 
 #pragma mark - lazy instantiation
 
 - (CalculatorBrain *)brain {
+    
     if (_brain == nil) {
         _brain = [[CalculatorBrain alloc] init];
     }
@@ -130,3 +146,4 @@
 }
 
 @end
+

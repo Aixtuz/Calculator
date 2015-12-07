@@ -12,7 +12,6 @@
 
 ///  逆波兰式
 @property (weak, nonatomic) IBOutlet UILabel *rpnLabel;
-
 ///  当前输入
 @property (weak, nonatomic) IBOutlet UILabel *display;
 
