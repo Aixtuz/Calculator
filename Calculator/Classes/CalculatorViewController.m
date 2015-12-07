@@ -76,6 +76,8 @@
     
     // 接收操作符
     NSString *operation = sender.currentTitle;
+    // 拼接显示逆波兰式
+    [self rpnWithStr:operation];
     
     // π 操作符, 则显示并压入
     if ([operation isEqualToString:@"π"]) {
@@ -98,12 +100,23 @@
     // 当前显示数值存入数组, 用于后续运算;
     [self.brain pushOperand:[self.display.text doubleValue]];
     
+    // 拼接显示逆波兰式
+    [self rpnWithStr:self.display.text];
+    
     //!!!: 连续点击 Enter 实现当前操作数重复存入, 故不可归 0;
     // Enter 后显示归 0, 可视化确认点击操作, 并简化后续 0或. 开头输入的判断
     // self.display.text = @"0";
     
     // 重置首位标识
     self.userIsInTheMiddleOfTypingANumber = NO;
+}
+
+// 拼接显示逆波兰式
+- (void)rpnWithStr:(NSString *)str {
+    // 添加空格
+    NSString *rpnStr = [NSString stringWithFormat:@"%@ ", str];
+    // 拼接显示
+    self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:rpnStr];
 }
 
 

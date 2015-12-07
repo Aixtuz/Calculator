@@ -10,8 +10,10 @@
 
 @interface CalculatorViewController : UIViewController
 
-///  数显
-@property (weak, nonatomic) IBOutlet UILabel *display;
+///  逆波兰式
+@property (weak, nonatomic) IBOutlet UILabel *rpnLabel;
 
+///  当前输入
+@property (weak, nonatomic) IBOutlet UILabel *display;
 
 @end
