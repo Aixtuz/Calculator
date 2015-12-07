@@ -106,6 +106,9 @@
         // 执行运算, 显示结果;
         double result = [self.brain performOperation:operation];
         self.display.text = [NSString stringWithFormat:@"%g", result];
+        
+        // 计算相关的操作符, 加上等号
+        [self addEqualsSign];
     }
 }
 
@@ -135,12 +138,22 @@
     self.userIsInTheMiddleOfTypingANumber = NO;
 }
 
+// 添加等号
+- (void)addEqualsSign {
+    self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:@"="];
+}
+
 // 拼接显示逆波兰式
 - (void)rpnWithStr:(NSString *)str {
-    // 添加空格
-    NSString *rpnStr = [NSString stringWithFormat:@"%@ ", str];
+    
+    // 拼接不包含最后的等号
+    if ([self.rpnLabel.text hasSuffix:@"="]) {
+        NSUInteger rpnIndex = self.rpnLabel.text.length;
+        self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnIndex - 1)];
+    }
     // 拼接显示
-    self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:rpnStr];
+    NSString *enterStr = [NSString stringWithFormat:@"%@ ", str];
+    self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:enterStr];
 }
 
 // 回退操作
