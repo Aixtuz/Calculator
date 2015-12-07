@@ -36,13 +36,30 @@
     //FIXME: 检查数字键点击
     NSLog(@"user touched: %@", digit);
     
-    // 判断是否首位数字
+    // 判断是否首位输入
     if (self.userIsInTheMiddleOfTypingANumber) {
-        // 非首位, 拼接显示;
+        
+        // 判断是否重复小数点
+        if ([sender.currentTitle isEqualToString:@"."] && [self.display.text containsString:@"."]) {
+            // 重复小数点, 忽略;
+            return;
+            
+        } else {
+            // 非重复小数点, 拼接显示;
+            self.display.text = [self.display.text stringByAppendingString:digit];
+        }
+        
+    } else if ([sender.currentTitle isEqualToString:@"."]) {
+        // 首位输入小数点, 拼接 0 前缀, 变更标识;
         self.display.text = [self.display.text stringByAppendingString:digit];
+        self.userIsInTheMiddleOfTypingANumber = YES;
+        
+    } else if ([sender.currentTitle isEqualToString:@"0"]) {
+        // 首位输入 0, 忽略;
+        return;
         
     } else {
-        // 首位, 直接赋值, 变更标识;
+        // 首位输入其他, 直接赋值, 变更标识;
         self.display.text = digit;
         self.userIsInTheMiddleOfTypingANumber = YES;
     }
@@ -75,6 +92,9 @@
     
     // 当前显示数值存入数组, 用于后续运算;
     [self.brain pushOperand:[self.display.text doubleValue]];
+    
+    // Enter 后显示归 0, 可视化确认点击操作, 并简化后续 0或. 开头输入的判断
+    self.display.text = @"0";
     
     // 下次数字输入为首位
     self.userIsInTheMiddleOfTypingANumber = NO;
