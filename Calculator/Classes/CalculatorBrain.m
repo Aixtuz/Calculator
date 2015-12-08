@@ -60,12 +60,14 @@
         // lastObject 即为栈顶元素
         result = sin([self popOperand]);
     
-    } else if ([operation isEqualToString:@"sin"]) {
+    } else if ([operation isEqualToString:@"cos"]) {
         result = cos([self popOperand]);
     
     } else if ([operation isEqualToString:@"sqrt"]) {
         result = sqrt([self popOperand]);
         
+    } else if ([operation isEqualToString:@"+/-"]) {
+        result = -[self popOperand];
     }
     // 结果压入数组, 待后续运算;
     [self pushOperand:result];
@@ -75,11 +77,11 @@
 // 清空状态
 - (void)clear {
     
-    self.operand = 0;
     [self.operandStack removeAllObjects];
+    self.isNegative = NO;
     
     //FIXME: 检查模型清空结果
-    NSLog(@"[模型清空] operand:%f - 数组计数:%ld", self.operand, self.operandStack.count);
+    NSLog(@"[模型清空] 数组计数:%ld", self.operandStack.count);
 }
 
 #pragma mark - lazy instantiation

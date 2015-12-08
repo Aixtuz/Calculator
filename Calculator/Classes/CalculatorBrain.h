@@ -10,8 +10,8 @@
 
 @interface CalculatorBrain : NSObject
 
-///  操作数
-@property (nonatomic, assign) double operand;
+///  正负标记
+@property (nonatomic, assign) BOOL isNegative;
 
 // 正序压入数组元素
 - (void)pushOperand:(double)operand;

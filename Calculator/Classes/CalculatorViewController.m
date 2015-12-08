@@ -51,15 +51,18 @@
         // 首位输入".", 补全 0 前缀, 变更首位标识;
         self.display.text = @"0.";
         self.userIsInTheMiddleOfTypingANumber = YES;
-        
+            
     } else if ([digit isEqualToString:@"0"]) {
         // 首位输入"0", 赋值 0, 但不变更首位标识;
         self.display.text = @"0";
-        
+            
     } else {
-        // 首位输入其他, 直接赋值, 变更首位标识;
+        // 首位输入其他数字, 直接赋值, 变更首位标识;
         self.display.text = digit;
         self.userIsInTheMiddleOfTypingANumber = YES;
+        
+        // 恢复正数标记
+        self.brain.isNegative = NO;
     }
 }
 
@@ -74,9 +77,12 @@
     
     if ([operation isEqualToString:@"π"]) {
         
+        // 每次点击 π 操作符, 重置正负标记;
+        self.brain.isNegative = NO;
+        
         // π 操作符, 先将之前当前显示压入数组;
         //!!!: 避免首位 π 将默认 0 压入, 需判断非 0 非 π 才执行, 避免冗余数值压入数组;
-        if (![self.display.text isEqualToString:@"0"] && ![self.display.text isEqualToString:@"π"]) {
+        if (![self.display.text isEqualToString:@"0"] && ![self.display.text hasSuffix:@"π"]) {
             [self enterPressed];
         }
         
@@ -112,30 +118,126 @@
     }
 }
 
+// 监听换号键点击
+- (IBAction)negativePressed:(UIButton *)sender {
+    
+    //FIXME: 检查操作符点击
+    NSLog(@"user touched: %@", sender.currentTitle);
+    
+    // 接收操作符
+    NSString *operation = sender.currentTitle;
+    
+    // 点击立即切换标记
+    self.brain.isNegative = !self.brain.isNegative;
+    
+    NSInteger rpnLength = self.rpnLabel.text.length;
+    NSInteger numLength = self.display.text.length;
+    
+    // 非首位直接换号
+    if (self.userIsInTheMiddleOfTypingANumber) {
+        
+        // 负数标记
+        if (self.brain.isNegative) {
+            // 正数加负号
+            self.display.text = [NSString stringWithFormat:@"-%@", self.display.text];
+            
+        } else {
+            // 负数删负号
+            self.display.text = [self.display.text substringFromIndex:1];
+        }
+        
+    } else if ([self.display.text hasSuffix:@"π"]) {
+        
+        // 首位 π 操作符状态
+        if (self.brain.isNegative) {
+            // 正数加负号
+            self.display.text = [NSString stringWithFormat:@"-%@", self.display.text];
+            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - 2)];
+            
+        } else {
+            // 负数删负号
+            self.display.text = [self.display.text substringFromIndex:1];
+            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - 5)];
+        }
+        // π 操作符直接压入;
+        [self enterPressed];
+        
+    } else {
+        // 首位状态且非 π;
+        if (self.brain.isNegative) {
+            // 正数加负号
+            self.display.text = [NSString stringWithFormat:@"-%@", self.display.text];
+            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - numLength -1)];
+            
+        } else {
+            // 负数删负号
+            self.display.text = [self.display.text substringFromIndex:1];
+            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - numLength - 3)];
+        }
+        
+        // 执行运算, 显示结果;
+        double result = [self.brain performOperation:operation];
+        self.display.text = [NSString stringWithFormat:@"%g", result];
+        
+        // 取出当前显示
+        NSString *operandStr = self.display.text;
+        
+        // 若为负数, 添加括号
+        if (self.brain.isNegative) {
+            operandStr = [NSString stringWithFormat:@"(%@)",operandStr];
+        }
+        
+        // 拼接显示逆波兰式
+        [self rpnWithStr:operandStr];
+    }
+}
+
+
 // 监听确认符点击
 - (IBAction)enterPressed {
     
     //FIXME: 检查 Enter 执行
     NSLog(@"user touched: Enter");
     
-    // 拼接显示逆波兰式
-    if ([self.display.text isEqualToString:@"π"]) {
-        // π 操作符, 存入 π 值, 显示 π 字符;
-        [self.brain pushOperand:M_PI];
-        [self rpnWithStr:@"π"];
+    // 取出当前显示
+    NSString *operandStr = self.display.text;
+    
+    // π 操作符, 存入 π 值, 显示 π 字符;
+    if ([operandStr hasSuffix:@"π"]) {
         
+        if (self.brain.isNegative) {
+            [self.brain pushOperand:-M_PI];
+            
+        } else {
+            [self.brain pushOperand:M_PI];
+        }
+        
+        // 若为负数, 添加括号
+        if (self.brain.isNegative) {
+            operandStr = [NSString stringWithFormat:@"(%@)",operandStr];
+        }
+
     } else {
         // 其他操作数, 存入数组, 用于后续运算;
-        [self.brain pushOperand:[self.display.text doubleValue]];
-        [self rpnWithStr:self.display.text];
+        [self.brain pushOperand:[operandStr doubleValue]];
+        
+        // 若为负数, 添加括号
+        if (self.brain.isNegative) {
+            operandStr = [NSString stringWithFormat:@"(%@)",operandStr];
+        }
+        
+        if (self.userIsInTheMiddleOfTypingANumber) {
+            // 恢复正数标记
+            self.brain.isNegative = NO;
+        }
     }
-    
-    //!!!: 连续点击 Enter 实现当前操作数重复存入, 故不可归 0;
-    // Enter 后显示归 0, 可视化确认点击操作, 并简化后续 0或. 开头输入的判断
-    // self.display.text = @"0";
     
     // 重置首位标识
     self.userIsInTheMiddleOfTypingANumber = NO;
+    
+    // 拼接显示逆波兰式
+    [self rpnWithStr:operandStr];
+
 }
 
 // 添加等号
