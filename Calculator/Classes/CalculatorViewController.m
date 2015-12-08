@@ -33,8 +33,6 @@
     
     // 接收数值符
     NSString *digit = sender.currentTitle;
-    //FIXME: 检查数字键点击
-    NSLog(@"user touched: %@", digit);
     
     // 非首位输入
     if (self.userIsInTheMiddleOfTypingANumber) {
@@ -46,31 +44,30 @@
             // 非重复".", 则拼接显示;
             self.display.text = [self.display.text stringByAppendingString:digit];
         }
-        
+    
     } else if ([digit isEqualToString:@"."]) {
-        // 首位输入".", 补全 0 前缀, 变更首位标识;
+        // 首位输入".", 补全 0 前缀;
         self.display.text = @"0.";
+        
+        // 首位新输入, 需恢复正数标记, 除首输 0 外, 还需结束首输状态(下同);
         self.userIsInTheMiddleOfTypingANumber = YES;
+        self.brain.isNegative = NO;
             
     } else if ([digit isEqualToString:@"0"]) {
-        // 首位输入"0", 赋值 0, 但不变更首位标识;
+        // 首位输入"0", 赋值 0;
         self.display.text = @"0";
+        self.brain.isNegative = NO;
             
     } else {
-        // 首位输入其他数字, 直接赋值, 变更首位标识;
+        // 首位输入其他数字, 直接赋值;
         self.display.text = digit;
         self.userIsInTheMiddleOfTypingANumber = YES;
-        
-        // 恢复正数标记
         self.brain.isNegative = NO;
     }
 }
 
 // 监听运算符点击
 - (IBAction)operationPressed:(UIButton *)sender {
-    
-    //FIXME: 检查操作符点击
-    NSLog(@"user touched: %@", sender.currentTitle);
     
     // 接收操作符
     NSString *operation = sender.currentTitle;
@@ -81,7 +78,6 @@
         self.brain.isNegative = NO;
         
         // π 操作符, 先将之前当前显示压入数组;
-        //!!!: 避免首位 π 将默认 0 压入, 需判断非 0 非 π 才执行, 避免冗余数值压入数组;
         if (![self.display.text isEqualToString:@"0"] && ![self.display.text hasSuffix:@"π"]) {
             [self enterPressed];
         }
@@ -101,7 +97,6 @@
     } else {
         
         // 其他操作符: 自动将当前显示数值存入数组, 用于后续运算;
-        //!!!: 之前为避免重复输入 0, 故首位 0 不改变标识, 因此补充 0 做操作数直接 Enter 时的入栈操作;
         if (self.userIsInTheMiddleOfTypingANumber || [self.display.text isEqualToString:@"0"]) {
             [self enterPressed];
         }
@@ -120,9 +115,6 @@
 
 // 监听换号键点击
 - (IBAction)negativePressed:(UIButton *)sender {
-    
-    //FIXME: 检查操作符点击
-    NSLog(@"user touched: %@", sender.currentTitle);
     
     // 接收操作符
     NSString *operation = sender.currentTitle;
@@ -163,6 +155,7 @@
         [self enterPressed];
         
     } else {
+        
         // 首位状态且非 π;
         if (self.brain.isNegative) {
             // 正数加负号
@@ -195,9 +188,6 @@
 
 // 监听确认符点击
 - (IBAction)enterPressed {
-    
-    //FIXME: 检查 Enter 执行
-    NSLog(@"user touched: Enter");
     
     // 取出当前显示
     NSString *operandStr = self.display.text;

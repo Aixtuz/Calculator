@@ -79,9 +79,6 @@
     
     [self.operandStack removeAllObjects];
     self.isNegative = NO;
-    
-    //FIXME: 检查模型清空结果
-    NSLog(@"[模型清空] 数组计数:%ld", self.operandStack.count);
 }
 
 #pragma mark - lazy instantiation
