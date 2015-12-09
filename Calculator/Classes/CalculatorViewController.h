@@ -11,7 +11,7 @@
 @interface CalculatorViewController : UIViewController
 
 ///  逆波兰式
-@property (weak, nonatomic) IBOutlet UILabel *rpnLabel;
+@property (weak, nonatomic) IBOutlet UILabel *stepDisplay;
 ///  当前输入
 @property (weak, nonatomic) IBOutlet UILabel *display;
 

@@ -34,35 +34,26 @@
     // 接收数值符
     NSString *digit = sender.currentTitle;
     
-    // 非首位输入
-    if (self.userIsInTheMiddleOfTypingANumber) {
-        // 重复".", 则忽略
-        if ([digit isEqualToString:@"."] && [self.display.text containsString:@"."]) {
+    // 输入小数点
+    if ([digit isEqualToString:@"."]) {
+        // 非首位输入状态, 重复小数点忽略;
+        if (self.userIsInTheMiddleOfTypingANumber && [self.display.text containsString:@"."]) {
             return;
-            
-        } else {
-            // 非重复".", 则拼接显示;
-            self.display.text = [self.display.text stringByAppendingString:digit];
         }
+    }
     
-    } else if ([digit isEqualToString:@"."]) {
-        // 首位输入".", 补全 0 前缀;
-        self.display.text = @"0.";
+    // 输入非小数点
+    if (self.userIsInTheMiddleOfTypingANumber) {
+        // 非首位输入状态, 直接拼接
+        [self displayAppendStr:digit];
         
-        // 首位新输入, 需恢复正数标记, 除首输 0 外, 还需结束首输状态(下同);
-        self.userIsInTheMiddleOfTypingANumber = YES;
-        self.brain.isNegative = NO;
-            
-    } else if ([digit isEqualToString:@"0"]) {
-        // 首位输入"0", 赋值 0;
-        self.display.text = @"0";
-        self.brain.isNegative = NO;
-            
     } else {
-        // 首位输入其他数字, 直接赋值;
-        self.display.text = digit;
-        self.userIsInTheMiddleOfTypingANumber = YES;
-        self.brain.isNegative = NO;
+        // 结束首输状态
+        if (![digit isEqualToString:@"0"]) {
+            self.userIsInTheMiddleOfTypingANumber = YES;
+        }
+        // 首位输入, 直接显示;
+        [self displayStr:digit];
     }
 }
 
@@ -72,213 +63,114 @@
     // 接收操作符
     NSString *operation = sender.currentTitle;
     
-    if ([operation isEqualToString:@"π"]) {
-        
-        // 每次点击 π 操作符, 重置正负标记;
-        self.brain.isNegative = NO;
-        
-        // π 操作符, 先将之前当前显示压入数组;
-        if (![self.display.text isEqualToString:@"0"] && ![self.display.text hasSuffix:@"π"]) {
-            [self enterPressed];
-        }
-        
-        // 再将 π 操作符自身, 显示并压入;
-        self.display.text = @"π";
-        [self enterPressed];
-        
-    } else if ([operation isEqualToString:@"C"]) {
-        // C 操作符, 执行 Clear 方法;
-        [self clear];
-        
-    } else if ([operation isEqualToString:@"←"]) {
-        // 回退符, 执行 backspace 方法;
-        [self backspace];
-    
-    } else {
-        
-        // 其他操作符: 自动将当前显示数值存入数组, 用于后续运算;
-        if (self.userIsInTheMiddleOfTypingANumber || [self.display.text isEqualToString:@"0"]) {
-            [self enterPressed];
-        }
-        
-        // 拼接显示逆波兰式
-        [self rpnWithStr:operation];
-        
-        // 执行运算, 显示结果;
-        double result = [self.brain performOperation:operation];
-        self.display.text = [NSString stringWithFormat:@"%g", result];
-        
-        // 计算相关的操作符, 加上等号
-        [self addEqualsSign];
-    }
-}
-
-// 监听换号键点击
-- (IBAction)negativePressed:(UIButton *)sender {
-    
-    // 接收操作符
-    NSString *operation = sender.currentTitle;
-    
-    // 点击立即切换标记
-    self.brain.isNegative = !self.brain.isNegative;
-    
-    NSInteger rpnLength = self.rpnLabel.text.length;
-    NSInteger numLength = self.display.text.length;
-    
-    // 非首位直接换号
+    // 非首位输入状态
     if (self.userIsInTheMiddleOfTypingANumber) {
         
-        // 负数标记
-        if (self.brain.isNegative) {
-            // 正数加负号
-            self.display.text = [NSString stringWithFormat:@"-%@", self.display.text];
+        // +/- 操作符, 仅换号;
+        if ([operation isEqualToString:@"+/-"]) {
+            
+            double temp = [self.display.text doubleValue];
+            temp = - temp;
+            self.display.text = [NSString stringWithFormat:@"%g", temp];
             
         } else {
-            // 负数删负号
-            self.display.text = [self.display.text substringFromIndex:1];
-        }
-        
-    } else if ([self.display.text hasSuffix:@"π"]) {
-        
-        // 首位 π 操作符状态
-        if (self.brain.isNegative) {
-            // 正数加负号
-            self.display.text = [NSString stringWithFormat:@"-%@", self.display.text];
-            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - 2)];
+            // 其他操作符,  执行 Enter + 运算;
+            [self enterPressed];
+            [self performOperation:operation];
             
-        } else {
-            // 负数删负号
-            self.display.text = [self.display.text substringFromIndex:1];
-            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - 5)];
         }
-        // π 操作符直接压入;
-        [self enterPressed];
-        
     } else {
-        
-        // 首位状态且非 π;
-        if (self.brain.isNegative) {
-            // 正数加负号
-            self.display.text = [NSString stringWithFormat:@"-%@", self.display.text];
-            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - numLength -1)];
-            
-        } else {
-            // 负数删负号
-            self.display.text = [self.display.text substringFromIndex:1];
-            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnLength - numLength - 3)];
-        }
-        
-        // 执行运算, 显示结果;
-        double result = [self.brain performOperation:operation];
-        self.display.text = [NSString stringWithFormat:@"%g", result];
-        
-        // 取出当前显示
-        NSString *operandStr = self.display.text;
-        
-        // 若为负数, 添加括号
-        if (self.brain.isNegative) {
-            operandStr = [NSString stringWithFormat:@"(%@)",operandStr];
-        }
-        
-        // 拼接显示逆波兰式
-        [self rpnWithStr:operandStr];
+        // 首位状态, 不区分操作符, 均开始运算;
+        [self performOperation:operation];
     }
 }
 
+// 执行操作
+- (void)performOperation:(NSString *)operation {
+    
+    // 执行操作, 返回结果
+    double result = [self.brain performOperation:operation];
+    // 结果字符串
+    NSString *resultStr = [NSString stringWithFormat:@"%g", result];
+    
+    // 显示结果
+    [self displayStr:resultStr];
+    
+    // setpdisplay 拼接操作符
+    [self stepAppendStr:operation];
+    
+    // 非 π, 拼接 = 号和结果;
+    if (![operation isEqualToString:@"π"]) {
+        // stepdisplay 拼接 = 号
+        [self stepAppendStr:@"="];
+        // stepDisplay 拼接 结果
+        [self stepAppendStr:resultStr];
+    }
+}
 
 // 监听确认符点击
 - (IBAction)enterPressed {
     
     // 取出当前显示
     NSString *operandStr = self.display.text;
-    
-    // π 操作符, 存入 π 值, 显示 π 字符;
-    if ([operandStr hasSuffix:@"π"]) {
-        
-        if (self.brain.isNegative) {
-            [self.brain pushOperand:-M_PI];
-            
-        } else {
-            [self.brain pushOperand:M_PI];
-        }
-        
-        // 若为负数, 添加括号
-        if (self.brain.isNegative) {
-            operandStr = [NSString stringWithFormat:@"(%@)",operandStr];
-        }
-
-    } else {
-        // 其他操作数, 存入数组, 用于后续运算;
-        [self.brain pushOperand:[operandStr doubleValue]];
-        
-        // 若为负数, 添加括号
-        if (self.brain.isNegative) {
-            operandStr = [NSString stringWithFormat:@"(%@)",operandStr];
-        }
-        
-        if (self.userIsInTheMiddleOfTypingANumber) {
-            // 恢复正数标记
-            self.brain.isNegative = NO;
-        }
-    }
+   
+    // 当前显示以浮点入栈
+    [self.brain pushOperand:[operandStr doubleValue]];
     
     // 重置首位标识
     self.userIsInTheMiddleOfTypingANumber = NO;
     
-    // 拼接显示逆波兰式
-    [self rpnWithStr:operandStr];
+    // stepDisplay 拼接显示
+    [self stepAppendStr:operandStr];
+    [self stepAppendStr:@" "];
 
-}
-
-// 添加等号
-- (void)addEqualsSign {
-    self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:@"="];
-}
-
-// 拼接显示逆波兰式
-- (void)rpnWithStr:(NSString *)str {
-    
-    // 拼接不包含最后的等号
-    if ([self.rpnLabel.text hasSuffix:@"="]) {
-        NSUInteger rpnIndex = self.rpnLabel.text.length;
-        self.rpnLabel.text = [self.rpnLabel.text substringToIndex:(rpnIndex - 1)];
-    }
-    // 拼接显示
-    NSString *enterStr = [NSString stringWithFormat:@"%@ ", str];
-    self.rpnLabel.text = [self.rpnLabel.text stringByAppendingString:enterStr];
 }
 
 // 回退操作
-- (void)backspace {
-
+- (IBAction)backspace {
+    
+    // 计算长度减 1
     NSUInteger index = self.display.text.length - 1;
+    
+    // 非个位
     if (index > 0) {
         // 回退 = 长度减 1
         self.display.text = [self.display.text substringToIndex:index];
         
     } else {
-        // π 回退, 需删除之前的 π 值和显示
-        if ([self.display.text isEqualToString:@"π"]) {
-            // 删除数组元素
-            [self.brain popOperand];
-            // 删除 rpnLabel 显示 (rpnLabel 比 display 多显示个空格);
-            NSUInteger rpnIndex = self.rpnLabel.text.length - 2;
-            self.rpnLabel.text = [self.rpnLabel.text substringToIndex:rpnIndex];
-        }
-        // 个位再回退归 0
+        
+        // 个位回退归 0
         self.display.text = @"0";
+        // 重置首位状态
+        self.userIsInTheMiddleOfTypingANumber = NO;
     }
 }
 
 // 清空状态
-- (void)clear {
+- (IBAction)clear {
     
+    // 重置显示和首位状态
     self.display.text = @"0";
-    self.rpnLabel.text = @"";
+    self.stepDisplay.text = @"";
     self.userIsInTheMiddleOfTypingANumber = NO;
     
     // 模型的 Clear 方法
     [self.brain clear];
+}
+
+// step 拼接显示
+- (void)stepAppendStr:(NSString *)str {
+    self.stepDisplay.text = [self.stepDisplay.text stringByAppendingString:str];
+}
+
+// display 直接显示
+- (void)displayStr:(NSString *)str {
+    self.display.text = str;
+}
+
+// display 拼接显示
+- (void)displayAppendStr:(NSString *)str {
+    self.display.text = [self.display.text stringByAppendingString:str];
 }
 
 

@@ -10,85 +10,127 @@
 
 @interface CalculatorBrain ()
 
-///  运算对象数组
-@property (nonatomic, strong) NSMutableArray *operandStack;
+///  运算步骤数组
+@property (nonatomic, strong) NSMutableArray *programStack;
 
 @end
 
 @implementation CalculatorBrain
 
-// 正序压入数组元素
-- (void)pushOperand:(double)operand {
-    
-    [self.operandStack addObject:[NSNumber numberWithDouble:operand]];
+//TODO: 显示运算步骤
++ (NSString *)descriptionOfProgram:(id)program {
+    return @"Implement this in Homework #2";
 }
 
-// 逆序弹出数组元素
-- (double)popOperand {
-    
-    NSNumber *operandObject = [self.operandStack lastObject];
-    
-    // 取出则删除
-    if (operandObject) {
-        [self.operandStack removeLastObject];
-    }
-    return [operandObject doubleValue];
+//TODO: 带参数的执行方法
++ (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues {
+    return 0;
 }
 
-// 执行运算
+// 执行操作
 - (double)performOperation:(NSString *)operation {
+    // 入栈
+    [self.programStack addObject:operation];
+    // 计算
+    return [[self class] runProgram:self.program];
+}
+
+// 以传入的数组执行操作
++ (double)runProgram:(id)program {
+    
+    NSMutableArray *stack;
+    // 赋值可变数组, 用于后续出栈计算;
+    if ([program isKindOfClass:[NSArray class]]) {
+        stack = [program mutableCopy];
+    }
+    return [self popOfProgramStack:stack];
+}
+
+// 出栈运算;
++ (double)popOfProgramStack:(NSMutableArray *)stack {
+    
+    double result = 0;
+    
+    // 取出数组末位元素
+    id topOfStack = [stack lastObject];
+    if (topOfStack) [stack removeLastObject];
+    
+    // 操作数, 直接返回
+    if ([topOfStack isKindOfClass:[NSNumber class]]) {
+        result = [topOfStack doubleValue];
+        
+    } else if ([topOfStack isKindOfClass:[NSString class]]) {
+        // 操作符, 执行计算
+        result = [self calculateOperation:topOfStack withStack:stack];
+    }
+    return result;
+}
+
+// 从出栈操作中抽取判别操作符的步骤
++ (double)calculateOperation:(NSString *)operation withStack:(NSMutableArray *)stack {
     
     double result = 0;
     
     if ([operation isEqualToString:@"+"]) {
-        result = [self popOperand] + [self popOperand];
-        
+        result = [self popOfProgramStack:stack] + [self popOfProgramStack:stack];
+
     } else if ([operation isEqualToString:@"*"]) {
-        result = [self popOperand] * [self popOperand];
-        
+        result = [self popOfProgramStack:stack] * [self popOfProgramStack:stack];
+
     } else if ([operation isEqualToString:@"-"]) {
-        double subtrahend = [self popOperand];
-        result = [self popOperand] - subtrahend;
-        
+        double subtrahend = [self popOfProgramStack:stack];
+        result = [self popOfProgramStack:stack] - subtrahend;
+
     } else if ([operation isEqualToString:@"/"]) {
-        double divisor = [self popOperand];
+        double divisor = [self popOfProgramStack:stack];
         if (divisor) {
-            result = [self popOperand] / divisor;
+            result = [self popOfProgramStack:stack] / divisor;
         }
-        
+
     } else if ([operation isEqualToString:@"sin"]) {
-        // lastObject 即为栈顶元素
-        result = sin([self popOperand]);
-    
+        result = sin([self popOfProgramStack:stack]);
+
     } else if ([operation isEqualToString:@"cos"]) {
-        result = cos([self popOperand]);
-    
+        result = cos([self popOfProgramStack:stack]);
+
     } else if ([operation isEqualToString:@"sqrt"]) {
-        result = sqrt([self popOperand]);
+        result = sqrt([self popOfProgramStack:stack]);
+
+    } else if ([operation isEqualToString:@"π"]) {
+        result = M_PI;
         
-    } else if ([operation isEqualToString:@"+/-"]) {
-        result = -[self popOperand];
+    } else  if ([operation isEqualToString:@"+/-"]) {
+        result = -[self popOfProgramStack:stack];
+        
     }
-    // 结果压入数组, 待后续运算;
-    [self pushOperand:result];
     return result;
+}
+
+// 入栈
+- (void)pushOperand:(double)operand {
+    
+    [self.programStack addObject:[NSNumber numberWithDouble:operand]];
+}
+
+// 重写 Getter 方法, 返回运算对象数组;
+- (id)program {
+    return [self.programStack copy];
 }
 
 // 清空状态
 - (void)clear {
     
-    [self.operandStack removeAllObjects];
-    self.isNegative = NO;
+    [self.programStack removeAllObjects];
 }
 
 #pragma mark - lazy instantiation
 
-- (NSMutableArray *)operandStack {
+- (NSMutableArray *)programStack {
     
-    if (_operandStack == nil) {
-        _operandStack = [NSMutableArray array];
+    if (_programStack == nil) {
+        _programStack = [NSMutableArray array];
     }
-    return _operandStack;
+    return _programStack;
 }
 
 @end
