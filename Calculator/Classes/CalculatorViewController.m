@@ -34,26 +34,17 @@
     // 接收数值符
     NSString *digit = sender.currentTitle;
     
-    // 输入小数点
-    if ([digit isEqualToString:@"."]) {
-        // 非首位输入状态, 重复小数点忽略;
-        if (self.userIsInTheMiddleOfTypingANumber && [self.display.text containsString:@"."]) {
-            return;
-        }
+    // 非首位状态, 重复小数点忽略;
+    if (self.userIsInTheMiddleOfTypingANumber && [digit isEqualToString:@"."] && [self.display.text containsString:@"."]) {
+        return;
     }
+
+    // 根据是否首位, 更新 display 显示;
+    [self displayUpdateWithStr:digit isAppend:self.userIsInTheMiddleOfTypingANumber];
     
-    // 输入非小数点
-    if (self.userIsInTheMiddleOfTypingANumber) {
-        // 非首位输入状态, 直接拼接
-        [self displayAppendStr:digit];
-        
-    } else {
-        // 结束首输状态
-        if (![digit isEqualToString:@"0"]) {
-            self.userIsInTheMiddleOfTypingANumber = YES;
-        }
-        // 首位输入, 直接显示;
-        [self displayStr:digit];
+    // 首位 非 0, 结束首位状态;
+    if (!self.userIsInTheMiddleOfTypingANumber && ![digit isEqualToString:@"0"]) {
+        self.userIsInTheMiddleOfTypingANumber = YES;
     }
 }
 
@@ -93,18 +84,15 @@
     // 结果字符串
     NSString *resultStr = [NSString stringWithFormat:@"%g", result];
     
-    // 显示结果
-    [self displayStr:resultStr];
-    
-    // setpdisplay 拼接操作符
-    [self stepAppendStr:operation];
+    // display 显示结果
+    [self displayUpdateWithStr:resultStr isAppend:NO];
     
     // 非 π, 拼接 = 号和结果;
-    if (![operation isEqualToString:@"π"]) {
-        // stepdisplay 拼接 = 号
-        [self stepAppendStr:@"="];
-        // stepDisplay 拼接 结果
-        [self stepAppendStr:resultStr];
+    if ([operation isEqualToString:@"π"]) {
+        // 将最后执行的操作符和结果组合后一起拼接
+        [self stepAppendStr:operation];
+    } else {
+        [self stepAppendStr:[NSString stringWithFormat:@"%@ = %@", operation, resultStr]];
     }
 }
 
@@ -114,17 +102,27 @@
     // 取出当前显示
     NSString *operandStr = self.display.text;
    
-    // 当前显示以浮点入栈
-    [self.brain pushOperand:[operandStr doubleValue]];
+    if ([self.display.text rangeOfCharacterFromSet:[NSCharacterSet letterCharacterSet]].location) {
+        // 非字母, 以浮点入栈
+        [self.brain pushOperand:[operandStr doubleValue]];
+        
+    } else {
+        // 字母为变量, 直接入栈
+        [self.brain pushVariable:operandStr];
+    }
     
     // 重置首位标识
     self.userIsInTheMiddleOfTypingANumber = NO;
     
     // stepDisplay 拼接显示
     [self stepAppendStr:operandStr];
-    [self stepAppendStr:@" "];
-
 }
+
+- (IBAction)variablePressed:(UIButton *)sender {
+    // 变量直接显示
+    [self displayUpdateWithStr:sender.currentTitle isAppend:NO];
+}
+
 
 // 回退操作
 - (IBAction)backspace {
@@ -160,17 +158,21 @@
 
 // step 拼接显示
 - (void)stepAppendStr:(NSString *)str {
+    str = [NSString stringWithFormat:@"%@ ", str];
     self.stepDisplay.text = [self.stepDisplay.text stringByAppendingString:str];
 }
 
-// display 直接显示
-- (void)displayStr:(NSString *)str {
-    self.display.text = str;
-}
-
-// display 拼接显示
-- (void)displayAppendStr:(NSString *)str {
-    self.display.text = [self.display.text stringByAppendingString:str];
+// display 更新显示
+- (void)displayUpdateWithStr:(NSString *)str isAppend:(BOOL)isAppend {
+    
+    if (isAppend) {
+        // 非首位拼接
+        self.display.text = [self.display.text stringByAppendingString:str];
+        
+    } else {
+        // 首位赋值
+        self.display.text = str;
+    }
 }
 
 

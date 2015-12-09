@@ -13,6 +13,7 @@
 ///  运算步骤
 @property (nonatomic, readonly) id program;
 
+
 // 显示运算步骤
 + (NSString *)descriptionOfProgram:(id)program;
 
@@ -22,6 +23,9 @@
 // 以传入的数组执行运算
 + (double)runProgram:(id)program;
 
+
+// 变量入栈
+- (void)pushVariable:(NSString *)variable;
 
 // 入栈
 - (void)pushOperand:(double)operand;

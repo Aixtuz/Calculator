@@ -17,13 +17,66 @@
 
 @implementation CalculatorBrain
 
+// 获取操作符信息集合
++ (NSDictionary *)operations {
+    
+    NSDictionary *dict = @{ @"+" : @"+",
+                            @"-" : @"-",
+                            @"*" : @"*",
+                            @"/" : @"/",
+                            @"sin" : @"sin",
+                            @"cos" : @"cos",
+                            @"π" : @"π"
+                            };
+    return dict;
+}
+
 //TODO: 显示运算步骤
 + (NSString *)descriptionOfProgram:(id)program {
     return @"Implement this in Homework #2";
 }
 
-//TODO: 带参数的执行方法
+// 带参数的执行方法
 + (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues {
+    
+    NSMutableArray *stack;
+    // 赋值可变数组, 用于后续出栈计算;
+    if ([program isKindOfClass:[NSArray class]]) {
+        stack = [program mutableCopy];
+    }
+    
+    // 遍历 Stack
+    for (int i = 0; i < stack.count; i++) {
+        
+        // 取出遍历的元素
+        id element = [stack objectAtIndex:i];
+        
+        // 非操作符的字符串 为 变量
+        if ([element isKindOfClass:[NSString class]] && ![self.operations objectForKey:element]) {
+            
+            // 取出变量对应值(可能为空)
+            id value = [variableValues objectForKey:element];
+            
+            if (value) {
+                // 有值则替换对应值
+                [stack replaceObjectAtIndex:i withObject:value];
+                
+            } else {
+                // 无值则替换 0
+                [stack replaceObjectAtIndex:i withObject:[NSNumber numberWithInt:0]];
+            }
+        }
+        
+        // 元素是变量, 则替换
+        if ([variableValues objectForKey:element]) {
+            //
+            [stack replaceObjectAtIndex:i withObject:[variableValues objectForKey:element]];
+            
+        } else {
+            [stack replaceObjectAtIndex:i withObject:[NSNumber numberWithInt:0]];
+            
+        }
+    }
     return 0;
 }
 
@@ -106,20 +159,26 @@
     return result;
 }
 
+// 变量入栈
+- (void)pushVariable:(NSString *)variable {
+    // 变量直接存字符
+    [self.programStack addObject:variable];
+}
+
 // 入栈
 - (void)pushOperand:(double)operand {
-    
+    // 操作数存 NSNumber
     [self.programStack addObject:[NSNumber numberWithDouble:operand]];
 }
 
-// 重写 Getter 方法, 返回运算对象数组;
+// 重写 Getter 方法
 - (id)program {
+    // 取出数组
     return [self.programStack copy];
 }
 
 // 清空状态
 - (void)clear {
-    
     [self.programStack removeAllObjects];
 }
 
@@ -134,3 +193,4 @@
 }
 
 @end
+
