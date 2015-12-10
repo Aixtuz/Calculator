@@ -156,8 +156,6 @@
         result = -[self popOfProgramStack:stack];
         
     }
-    //FIXME: 
-    NSLog(@"运算栈 %@ \n操作符 %@ \n计算结果 %g",stack, operation, result);
     return result;
 }
 
@@ -177,8 +175,10 @@
 
 // 是否变量
 + (BOOL)isVariable:(id)element {
-    // 非操作符的字符 为 变量
-    return [element isKindOfClass:[NSString class]] && ![self.operations objectForKey:element];
+    // 字符串中非操作符的字母 为 变量
+    return [element isKindOfClass:[NSString class]]
+    && ([element rangeOfCharacterFromSet:[NSCharacterSet letterCharacterSet]].location != NSNotFound)
+    && ![[self operations] objectForKey:element];
 }
 
 // 变量入栈
