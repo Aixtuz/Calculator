@@ -55,7 +55,19 @@
     if ([program isKindOfClass:[NSArray class]]) {
         stack = [program mutableCopy];
     }
-    return [self descriptionOfTopOfStack:stack];
+    return [self extremeBrackets:[self descriptionOfTopOfStack:stack]];
+}
+
++ (NSString *)extremeBrackets:(NSString *)str {
+    
+    // 首位是括号则舍弃
+    if ([str hasPrefix:@"("] && [str hasSuffix:@")"]) {
+        return [str substringWithRange:NSMakeRange(1, str.length - 2)];
+        
+    } else {
+        // 否则不变
+        return str;
+    }
 }
 
 // 出栈后的判断

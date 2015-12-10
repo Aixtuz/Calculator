@@ -38,13 +38,17 @@
     if (self.userIsInTheMiddleOfTypingANumber && [digit isEqualToString:@"."] && [self.display.text containsString:@"."]) {
         return;
     }
-
-    // 根据是否首位, 更新 display 显示;
-    [self displayUpdateWithStr:digit isAppend:self.userIsInTheMiddleOfTypingANumber];
     
-    // 首位 非 0, 结束首位状态;
-    if (!self.userIsInTheMiddleOfTypingANumber && ![digit isEqualToString:@"0"]) {
-        self.userIsInTheMiddleOfTypingANumber = YES;
+    if (!self.userIsInTheMiddleOfTypingANumber) {
+        // 首位 "." 需要拼接
+        [self displayUpdateWithStr:digit isAppend:[digit isEqualToString:@"."]];
+        
+        // 首位 非 0, 结束首位状态;
+        self.userIsInTheMiddleOfTypingANumber = ![digit isEqualToString:@"0"];
+        
+    } else {
+        // 其他情况, 根据是否首位, 更新 display 显示;
+        [self displayUpdateWithStr:digit isAppend:self.userIsInTheMiddleOfTypingANumber];
     }
 }
 
@@ -119,7 +123,6 @@
     [self enterPressed];
 }
 
-
 // 回退操作
 - (IBAction)backspace {
     
@@ -163,6 +166,10 @@
     if (isAppend) {
         // 非首位拼接
         self.display.text = [self.display.text stringByAppendingString:str];
+        
+    } else if ([str isEqualToString:@"."]) {
+        // 首位小数点
+        self.display.text = @"0.";
         
     } else {
         // 首位赋值
