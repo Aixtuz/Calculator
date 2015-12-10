@@ -387,7 +387,6 @@
                                             <color key="titleColor" red="0.97254901959999995" green="0.97647058819999999" blue="0.98039215690000003" alpha="1" colorSpace="calibratedRGB"/>
                                         </state>
                                         <connections>
-                                            <action selector="digitPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XHY-df-2Az"/>
                                             <action selector="variablePressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Ymt-wP-2rj"/>
                                         </connections>
                                     </button>
@@ -455,7 +454,6 @@
                                             <color key="titleColor" red="0.97254901959999995" green="0.97647058819999999" blue="0.98039215690000003" alpha="1" colorSpace="calibratedRGB"/>
                                         </state>
                                         <connections>
-                                            <action selector="digitPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="PqB-rI-Gax"/>
                                             <action selector="variablePressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Fwr-Dv-ts4"/>
                                         </connections>
                                     </button>
@@ -472,7 +470,6 @@
                                             <color key="titleColor" red="0.97254901959999995" green="0.97647058819999999" blue="0.98039215690000003" alpha="1" colorSpace="calibratedRGB"/>
                                         </state>
                                         <connections>
-                                            <action selector="digitPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="M46-6r-uYH"/>
                                             <action selector="variablePressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Xvj-xs-bAO"/>
                                         </connections>
                                     </button>
@@ -489,7 +486,6 @@
                                             <color key="titleColor" red="0.97254901959999995" green="0.97647058819999999" blue="0.98039215690000003" alpha="1" colorSpace="calibratedRGB"/>
                                         </state>
                                         <connections>
-                                            <action selector="digitPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="0ek-0Y-iID"/>
                                             <action selector="variablePressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5lN-LZ-1ay"/>
                                         </connections>
                                     </button>

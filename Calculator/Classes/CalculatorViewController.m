@@ -15,6 +15,8 @@
 @property (nonatomic, assign) BOOL userIsInTheMiddleOfTypingANumber;
 ///  数据模型
 @property (nonatomic, strong) CalculatorBrain *brain;
+///  参数集合
+@property (nonatomic, strong) NSDictionary *variableValues;
 
 @end
 
@@ -33,22 +35,22 @@
     
     // 接收数值符
     NSString *digit = sender.currentTitle;
-    
-    // 非首位状态, 重复小数点忽略;
-    if (self.userIsInTheMiddleOfTypingANumber && [digit isEqualToString:@"."] && [self.display.text containsString:@"."]) {
-        return;
-    }
-    
+
     if (!self.userIsInTheMiddleOfTypingANumber) {
-        // 首位 "." 需要拼接
+        // 首位非 0, 结束首位状态;
+        if (![digit isEqualToString:@"0"]) {
+            self.userIsInTheMiddleOfTypingANumber = YES;
+        }
+        // 首位 "." 需要拼接, 非 "." 直接显示;
         [self displayUpdateWithStr:digit isAppend:[digit isEqualToString:@"."]];
         
-        // 首位 非 0, 结束首位状态;
-        self.userIsInTheMiddleOfTypingANumber = ![digit isEqualToString:@"0"];
+    } else if ([digit isEqualToString:@"."] && [self.display.text containsString:@"."]) {
+        // 非首位状态, 重复小数点忽略;
+        return;
         
     } else {
-        // 其他情况, 根据是否首位, 更新 display 显示;
-        [self displayUpdateWithStr:digit isAppend:self.userIsInTheMiddleOfTypingANumber];
+        // 非首位其他, 直接拼接;
+        [self displayUpdateWithStr:digit isAppend:YES];
     }
 }
 
@@ -118,7 +120,13 @@
 }
 
 - (IBAction)variablePressed:(UIButton *)sender {
-    // 变量直接显示
+    
+    if (self.userIsInTheMiddleOfTypingANumber) {
+        // 之前输入内容, 先 Enter;
+        [self enterPressed];
+    }
+    
+    // 变量直接显示, 直接 Enter;
     [self displayUpdateWithStr:sender.currentTitle isAppend:NO];
     [self enterPressed];
 }

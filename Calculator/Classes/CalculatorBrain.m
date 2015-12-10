@@ -178,7 +178,7 @@
 }
 
 // 执行操作
-- (double)performOperation:(NSString *)operation {
+- (double)performOperation:(NSString *)operation{
     // 入栈
     [self.programStack addObject:operation];
     // 计算
