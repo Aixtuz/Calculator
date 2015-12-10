@@ -13,7 +13,6 @@
 ///  运算步骤
 @property (nonatomic, readonly) id program;
 
-
 // 显示运算步骤
 + (NSString *)descriptionOfProgram:(id)program;
 

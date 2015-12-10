@@ -20,28 +20,109 @@
 // 获取操作符信息集合
 + (NSDictionary *)operations {
     
-    NSDictionary *dict = @{ @"+" : @"+",
-                            @"-" : @"-",
-                            @"*" : @"*",
-                            @"/" : @"/",
-                            @"sin" : @"sin",
-                            @"cos" : @"cos",
-                            @"π" : @"π"
-                            };
-    return dict;
+    // 定义元数
+    NSNumber *zero = [NSNumber numberWithInt:0];
+    NSNumber *one = [NSNumber numberWithInt:1];
+    NSNumber *two = [NSNumber numberWithInt:2];
+    
+    NSMutableDictionary *dictM = [NSMutableDictionary dictionary];
+    
+    // 零元操作符
+    // Hints: 建议使用 dictionaryWithObjectsAndKeys 方法
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:zero, @"variableCount", @"π", @"printFormat", nil] forKey:@"π"];
+    
+    // 一元操作符
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:one, @"variableCount", @"sin(%@)", @"printFormat", nil] forKey:@"sin"];
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:one, @"variableCount", @"cos(%@)", @"printFormat", nil] forKey:@"cos"];
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:one, @"variableCount", @"sqrt(%@)", @"printFormat", nil] forKey:@"sqrt"];
+    
+    // 二元操作符
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ + %@", @"printFormat", nil] forKey:@"+"];
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ - %@", @"printFormat", nil] forKey:@"-"];
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ * %@", @"printFormat", nil] forKey:@"*"];
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ / %@", @"printFormat", nil] forKey:@"/"];
+    
+    
+    return dictM;
 }
 
-//TODO: 显示运算步骤
+// 显示运算步骤
 + (NSString *)descriptionOfProgram:(id)program {
-    return @"Implement this in Homework #2";
+    
+    NSMutableArray *stack;
+    
+    // 确认已存在才赋值, 复制避免改动 stack 属性存储的内容;
+    if ([program isKindOfClass:[NSArray class]]) {
+        stack = [program mutableCopy];
+    }
+    
+    // 用于显示纤手操作数和打印结果
+    NSString *first, *second, *stepStr;
+    
+    // 取出栈顶元素
+    id element = [stack lastObject];
+    if (element) {
+        // 成功取出, 则删除
+        [stack removeLastObject];
+        
+        // 获取操作符对应信息
+        // Hints: 操作符对应:几元? 打印格式? (Todo: operations 中增加这些内容)
+        
+        // 判断是否为操作符, 若是取出操作符对应 元数,格式 信息
+        NSDictionary *operation = [[self operations] objectForKey:element];
+        
+        // 成功取出则为操作符
+        if (operation) {
+            
+            // 元数(需要操作符前面几位操作数参与计算)
+            int variableCount = [[operation objectForKey:@"variableCount"] intValue];
+            // 打印格式
+            NSString *format = [operation objectForKey:@"printFormat"];
+            
+            // 根据元数, 决定需出栈几位操作数参与运算
+            switch (variableCount) {
+                case 0:
+                    stepStr = format;
+                    break;
+                
+                case 1:
+                    first = [stack lastObject];
+                    if (first) [stack removeLastObject];
+                    
+                    stepStr = [NSString stringWithFormat:format, first];
+                    break;
+                    
+                case 2:
+                    
+                    second = [stack lastObject];
+                    if (second) [stack removeLastObject];
+                    
+                    first = [stack lastObject];
+                    if (first) [stack removeLastObject];
+                    
+                    stepStr = [NSString stringWithFormat:format, first, second];
+                    break;
+                    
+                default:
+                    break;
+            }
+            
+        } else {
+            // operations 取出的字典中无此 key, 则非操作符, 直接打印
+            stepStr = [element description];
+        }
+    }
+    return stepStr;
 }
 
 // 带参数的执行方法
 + (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues {
     
     NSMutableArray *stack;
-    // 赋值可变数组, 用于后续出栈计算;
+    
+    // 确认已存在才复制, 避免改动 stack 属性存储的内容;
     if ([program isKindOfClass:[NSArray class]]) {
+        // 赋值可变数组, 用于后续出栈计算;
         stack = [program mutableCopy];
     }
     
@@ -74,7 +155,6 @@
             
         } else {
             [stack replaceObjectAtIndex:i withObject:[NSNumber numberWithInt:0]];
-            
         }
     }
     return 0;
@@ -92,8 +172,10 @@
 + (double)runProgram:(id)program {
     
     NSMutableArray *stack;
-    // 赋值可变数组, 用于后续出栈计算;
+    
+    // 确认已存在才复制, 避免改动 stack 属性存储的内容;
     if ([program isKindOfClass:[NSArray class]]) {
+        // 赋值可变数组, 用于后续出栈计算;
         stack = [program mutableCopy];
     }
     return [self popOfProgramStack:stack];
@@ -164,12 +246,16 @@
     
     NSMutableSet *variables;
     
-    // 遍历 Stack, 判断变量存入 NSSet
-    [program enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([CalculatorBrain isVariable:obj]) {
-            [variables addObject:obj];
-        }
-    }];
+    // 确认已存在才遍历
+    if ([program isKindOfClass:[NSArray class]]) {
+        
+        // 遍历 Stack, 判断变量存入 NSSet
+        [program enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([CalculatorBrain isVariable:obj]) {
+                [variables addObject:obj];
+            }
+        }];
+    }
     return variables;
 }
 

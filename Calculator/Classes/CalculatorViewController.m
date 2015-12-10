@@ -87,13 +87,8 @@
     // display 显示结果
     [self displayUpdateWithStr:resultStr isAppend:NO];
     
-    // 非 π, 拼接 = 号和结果;
-    if ([operation isEqualToString:@"π"]) {
-        // 将最后执行的操作符和结果组合后一起拼接
-        [self stepAppendStr:operation];
-    } else {
-        [self stepAppendStr:[NSString stringWithFormat:@"%@ = %@", operation, resultStr]];
-    }
+    // 不再考虑操作符元数, 交给模型判断, 直接刷新结果;
+    [self stepDisplayUpdate];
 }
 
 // 监听确认符点击
@@ -117,7 +112,7 @@
     self.userIsInTheMiddleOfTypingANumber = NO;
     
     // stepDisplay 拼接显示
-    [self stepAppendStr:operandStr];
+    [self stepDisplayUpdate];
 }
 
 - (IBAction)variablePressed:(UIButton *)sender {
@@ -160,9 +155,8 @@
 }
 
 // step 拼接显示
-- (void)stepAppendStr:(NSString *)str {
-    str = [NSString stringWithFormat:@"%@ ", str];
-    self.stepDisplay.text = [self.stepDisplay.text stringByAppendingString:str];
+- (void)stepDisplayUpdate {
+    self.stepDisplay.text = [CalculatorBrain descriptionOfProgram:self.brain.program];
 }
 
 // display 更新显示
