@@ -37,8 +37,8 @@
     [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:one, @"variableCount", @"sqrt(%@)", @"printFormat", nil] forKey:@"sqrt"];
     
     // 二元操作符
-    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ + %@", @"printFormat", nil] forKey:@"+"];
-    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ - %@", @"printFormat", nil] forKey:@"-"];
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"(%@ + %@)", @"printFormat", nil] forKey:@"+"];
+    [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"(%@ - %@)", @"printFormat", nil] forKey:@"-"];
     [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ * %@", @"printFormat", nil] forKey:@"*"];
     [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ / %@", @"printFormat", nil] forKey:@"/"];
     
@@ -55,6 +55,11 @@
     if ([program isKindOfClass:[NSArray class]]) {
         stack = [program mutableCopy];
     }
+    return [self descriptionOfTopOfStack:stack];
+}
+
+// 出栈后的判断
++ (NSString *)descriptionOfTopOfStack:(NSMutableArray *)stack {
     
     // 用于显示纤手操作数和打印结果
     NSString *first, *second, *stepStr;
@@ -64,9 +69,6 @@
     if (element) {
         // 成功取出, 则删除
         [stack removeLastObject];
-        
-        // 获取操作符对应信息
-        // Hints: 操作符对应:几元? 打印格式? (Todo: operations 中增加这些内容)
         
         // 判断是否为操作符, 若是取出操作符对应 元数,格式 信息
         NSDictionary *operation = [[self operations] objectForKey:element];
@@ -84,22 +86,24 @@
                 case 0:
                     stepStr = format;
                     break;
-                
-                case 1:
-                    first = [stack lastObject];
-                    if (first) [stack removeLastObject];
                     
+                case 1:
+                    first = [self descriptionOfTopOfStack:stack];
+                    if ([first isEqualToString:@""]) {
+                        first = @"0";
+                    }
                     stepStr = [NSString stringWithFormat:format, first];
                     break;
                     
                 case 2:
-                    
-                    second = [stack lastObject];
-                    if (second) [stack removeLastObject];
-                    
-                    first = [stack lastObject];
-                    if (first) [stack removeLastObject];
-                    
+                    second = [self descriptionOfTopOfStack:stack];
+                    if ([second isEqualToString:@""]) {
+                        second = @"0";
+                    }
+                    first = [self descriptionOfTopOfStack:stack];
+                    if ([first isEqualToString:@""]) {
+                        first = @"0";
+                    }
                     stepStr = [NSString stringWithFormat:format, first, second];
                     break;
                     
@@ -114,6 +118,7 @@
     }
     return stepStr;
 }
+
 
 // 带参数的执行方法
 + (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues {

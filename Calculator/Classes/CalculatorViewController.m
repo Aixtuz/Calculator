@@ -98,12 +98,10 @@
     NSString *operandStr = self.display.text;
    
     if ([CalculatorBrain isVariable:operandStr]) {
-        NSLog(@"%@", operandStr);
         // 变量直接入栈
         [self.brain pushVariable:operandStr];
         
     } else {
-        NSLog(@"%f", [operandStr doubleValue]);
         // 非变量, 以浮点入栈;
         [self.brain pushOperand:[operandStr doubleValue]];
     }
