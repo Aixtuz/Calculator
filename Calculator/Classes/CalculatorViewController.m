@@ -102,13 +102,15 @@
     // 取出当前显示
     NSString *operandStr = self.display.text;
    
-    if ([self.display.text rangeOfCharacterFromSet:[NSCharacterSet letterCharacterSet]].location) {
-        // 非字母, 以浮点入栈
-        [self.brain pushOperand:[operandStr doubleValue]];
+    if ([CalculatorBrain isVariable:operandStr]) {
+        NSLog(@"%@", operandStr);
+        // 变量直接入栈
+        [self.brain pushVariable:operandStr];
         
     } else {
-        // 字母为变量, 直接入栈
-        [self.brain pushVariable:operandStr];
+        NSLog(@"%f", [operandStr doubleValue]);
+        // 非变量, 以浮点入栈;
+        [self.brain pushOperand:[operandStr doubleValue]];
     }
     
     // 重置首位标识
@@ -121,6 +123,7 @@
 - (IBAction)variablePressed:(UIButton *)sender {
     // 变量直接显示
     [self displayUpdateWithStr:sender.currentTitle isAppend:NO];
+    [self enterPressed];
 }
 
 

@@ -23,6 +23,11 @@
 // 以传入的数组执行运算
 + (double)runProgram:(id)program;
 
+// 返回运算所用变量集合
++ (NSSet *)variablesUsedInProgram:(id)program;
+
+// 是否变量
++ (BOOL)isVariable:(id)element;
 
 // 变量入栈
 - (void)pushVariable:(NSString *)variable;

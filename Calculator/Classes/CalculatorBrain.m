@@ -52,7 +52,7 @@
         id element = [stack objectAtIndex:i];
         
         // 非操作符的字符串 为 变量
-        if ([element isKindOfClass:[NSString class]] && ![self.operations objectForKey:element]) {
+        if ([CalculatorBrain isVariable:element]) {
             
             // 取出变量对应值(可能为空)
             id value = [variableValues objectForKey:element];
@@ -156,7 +156,29 @@
         result = -[self popOfProgramStack:stack];
         
     }
+    //FIXME: 
+    NSLog(@"运算栈 %@ \n操作符 %@ \n计算结果 %g",stack, operation, result);
     return result;
+}
+
+// 返回运算所用变量集合
++ (NSSet *)variablesUsedInProgram:(id)program {
+    
+    NSMutableSet *variables;
+    
+    // 遍历 Stack, 判断变量存入 NSSet
+    [program enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([CalculatorBrain isVariable:obj]) {
+            [variables addObject:obj];
+        }
+    }];
+    return variables;
+}
+
+// 是否变量
++ (BOOL)isVariable:(id)element {
+    // 非操作符的字符 为 变量
+    return [element isKindOfClass:[NSString class]] && ![self.operations objectForKey:element];
 }
 
 // 变量入栈
