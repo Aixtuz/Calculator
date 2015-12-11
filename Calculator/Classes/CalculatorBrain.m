@@ -55,7 +55,14 @@
     if ([program isKindOfClass:[NSArray class]]) {
         stack = [program mutableCopy];
     }
-    return [self extremeBrackets:[self descriptionOfTopOfStack:stack]];
+    // 取出出栈结果, 过滤最外层括号
+    NSString *result = [self extremeBrackets:[self descriptionOfTopOfStack:stack]];
+    
+    // 栈不空,继续出栈
+    if (stack.count != 0) {
+        result = [[self extremeBrackets:[self descriptionOfTopOfStack:stack]] stringByAppendingFormat:@", %@", result];
+    }
+    return result;
 }
 
 + (NSString *)extremeBrackets:(NSString *)str {
@@ -150,12 +157,12 @@
         id element = [stack objectAtIndex:i];
         
         // 非操作符的字符串 为 变量
-        if ([CalculatorBrain isVariable:element]) {
+        if ([self isVariable:element]) {
             
             // 取出变量对应值(可能为空)
             id value = [variableValues objectForKey:element];
             
-            if (value) {
+            if ([value isKindOfClass:[NSNumber class]]) {
                 // 有值则替换对应值
                 [stack replaceObjectAtIndex:i withObject:value];
                 
@@ -164,38 +171,21 @@
                 [stack replaceObjectAtIndex:i withObject:[NSNumber numberWithInt:0]];
             }
         }
-        
-        // 元素是变量, 则替换
-        if ([variableValues objectForKey:element]) {
-            //
-            [stack replaceObjectAtIndex:i withObject:[variableValues objectForKey:element]];
-            
-        } else {
-            [stack replaceObjectAtIndex:i withObject:[NSNumber numberWithInt:0]];
-        }
     }
-    return 0;
+    return [self popOfProgramStack:stack];
 }
 
 // 执行操作
-- (double)performOperation:(NSString *)operation{
+- (double)performOperation:(NSString *)operation withVariables:(NSDictionary *)variableValues {
     // 入栈
     [self.programStack addObject:operation];
     // 计算
-    return [[self class] runProgram:self.program];
+    return [[self class] runProgram:self.program usingVariableValues:variableValues];
 }
 
 // 以传入的数组执行操作
 + (double)runProgram:(id)program {
-    
-    NSMutableArray *stack;
-    
-    // 确认已存在才复制, 避免改动 stack 属性存储的内容;
-    if ([program isKindOfClass:[NSArray class]]) {
-        // 赋值可变数组, 用于后续出栈计算;
-        stack = [program mutableCopy];
-    }
-    return [self popOfProgramStack:stack];
+    return [self runProgram:program usingVariableValues:nil];
 }
 
 // 出栈运算;
@@ -261,13 +251,14 @@
 // 返回运算所用变量集合
 + (NSSet *)variablesUsedInProgram:(id)program {
     
-    NSMutableSet *variables;
+    NSMutableSet *variables = [NSMutableSet set];
     
     // 确认已存在才遍历
     if ([program isKindOfClass:[NSArray class]]) {
         
         // 遍历 Stack, 判断变量存入 NSSet
         [program enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            
             if ([CalculatorBrain isVariable:obj]) {
                 [variables addObject:obj];
             }

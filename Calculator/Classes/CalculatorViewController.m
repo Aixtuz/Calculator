@@ -86,7 +86,7 @@
 - (void)performOperation:(NSString *)operation {
     
     // 执行操作, 返回结果
-    double result = [self.brain performOperation:operation];
+    double result = [self.brain performOperation:operation withVariables:self.variableValues];
     // 结果字符串
     NSString *resultStr = [NSString stringWithFormat:@"%g", result];
     
@@ -119,6 +119,7 @@
     [self stepDisplayUpdate];
 }
 
+// 变量点击
 - (IBAction)variablePressed:(UIButton *)sender {
     
     if (self.userIsInTheMiddleOfTypingANumber) {
@@ -129,6 +130,9 @@
     // 变量直接显示, 直接 Enter;
     [self displayUpdateWithStr:sender.currentTitle isAppend:NO];
     [self enterPressed];
+    
+    // 更新变量显示 Label
+    [self variableUpdate];
 }
 
 // 回退操作
@@ -157,6 +161,7 @@
     // 重置显示和首位状态
     self.display.text = @"0";
     self.stepDisplay.text = @"";
+    self.variableDisplay.text = @"";
     self.userIsInTheMiddleOfTypingANumber = NO;
     
     // 模型的 Clear 方法
@@ -185,6 +190,31 @@
     }
 }
 
+// variable 更新显示
+- (void)variableUpdate {
+    
+    // 默认显示空
+    NSString *variablesDisplay = @"";
+    
+    // 取得变量集合
+    NSSet *variables = [CalculatorBrain variablesUsedInProgram:self.brain.program];
+    
+    // 遍历全部变量
+    for (NSString *variable in variables) {
+        
+        // 取出对应值
+        NSNumber *value = [self.variableValues objectForKey:variable];
+        
+        // 当前变量无值时, 显示 0;
+        if (!value) {
+            value = [NSNumber numberWithInt:0];
+        }
+        // 更新显示
+        variablesDisplay = [variablesDisplay stringByAppendingFormat:@"%@ = %@ ", variable, value];
+    }
+    // 显示变量
+    self.variableDisplay.text = variablesDisplay;
+}
 
 #pragma mark - lazy instantiation
 

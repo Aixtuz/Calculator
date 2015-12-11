@@ -14,5 +14,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *stepDisplay;
 ///  当前输入
 @property (weak, nonatomic) IBOutlet UILabel *display;
+///  变量显示
+@property (weak, nonatomic) IBOutlet UILabel *variableDisplay;
 
 @end

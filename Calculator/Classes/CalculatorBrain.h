@@ -35,7 +35,7 @@
 - (void)pushOperand:(double)operand;
 
 // 执行运算
-- (double)performOperation:(NSString *)operation;
+- (double)performOperation:(NSString *)operation withVariables:(NSDictionary *)variableValues;
 
 // 清空状态
 - (void)clear;
