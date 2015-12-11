@@ -37,6 +37,9 @@
 // 执行运算
 - (double)performOperation:(NSString *)operation withVariables:(NSDictionary *)variableValues;
 
+// 清空末尾元素
+- (void)clearLast;
+
 // 清空状态
 - (void)clear;
 

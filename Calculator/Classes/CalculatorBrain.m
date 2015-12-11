@@ -290,7 +290,12 @@
 // 重写 Getter 方法
 - (id)program {
     // 取出数组
-    return [self.programStack copy];
+    return [self.programStack mutableCopy];
+}
+
+// 清空末尾元素
+- (void)clearLast {
+    [self.programStack removeLastObject];
 }
 
 // 清空状态

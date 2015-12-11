@@ -135,6 +135,42 @@
     [self variableUpdate];
 }
 
+// 测试点击
+- (IBAction)testPressed:(UIButton *)sender {
+    
+    if ([sender.currentTitle isEqualToString:@"T+"]) {
+        self.variableValues = [NSDictionary dictionaryWithObjectsAndKeys:
+                               [NSNumber numberWithInt:100], @"x",
+                               [NSNumber numberWithInt:200], @"y",
+                               [NSNumber numberWithInt:300], @"a",
+                               [NSNumber numberWithInt:400], @"b",
+                                   nil];
+    } else if ([sender.currentTitle isEqualToString:@"T-"]) {
+        self.variableValues = [NSDictionary dictionaryWithObjectsAndKeys:
+                               [NSNumber numberWithInt:-100], @"x",
+                               [NSNumber numberWithInt:-200], @"y",
+                               [NSNumber numberWithInt:-300], @"a",
+                               [NSNumber numberWithInt:-400], @"b",
+                               nil];
+    } else if ([sender.currentTitle isEqualToString:@"nil"]) {
+        self.variableValues = [NSDictionary dictionaryWithObjectsAndKeys:
+                               [NSNull null], @"x",
+                               [NSNull null], @"y",
+                               [NSNull null], @"a",
+                               [NSNull null], @"b",
+                               nil];
+    }
+    // 刷新变量 Label 显示
+    [self variableUpdate];
+    // 重新运算
+    double result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.variableValues];
+    // 刷新 display
+    [self displayUpdateWithStr:[NSString stringWithFormat:@"%g", result] isAppend:NO];
+    // 刷新 step
+    [self stepDisplayUpdate];
+}
+
+
 // 回退操作
 - (IBAction)backspace {
     
@@ -147,11 +183,21 @@
         self.display.text = [self.display.text substringToIndex:index];
         
     } else {
-        
-        // 个位回退归 0
+        // 个位再删归 0
         self.display.text = @"0";
         // 重置首位状态
         self.userIsInTheMiddleOfTypingANumber = NO;
+    }
+    
+    // 0 再删, 取出栈顶并重新运算显示
+    if ([self.display.text isEqualToString:@"0"]) {
+        [self.brain clearLast];
+    
+        // 重新运算
+        double result = [CalculatorBrain runProgram:self.brain.program usingVariableValues:self.variableValues];
+        // 刷新显示
+        [self displayUpdateWithStr:[NSString stringWithFormat:@"%g", result] isAppend:NO];
+        [self stepDisplayUpdate];
     }
 }
 
@@ -162,6 +208,7 @@
     self.display.text = @"0";
     self.stepDisplay.text = @"";
     self.variableDisplay.text = @"";
+    self.variableValues = nil;
     self.userIsInTheMiddleOfTypingANumber = NO;
     
     // 模型的 Clear 方法
@@ -206,7 +253,7 @@
         NSNumber *value = [self.variableValues objectForKey:variable];
         
         // 当前变量无值时, 显示 0;
-        if (!value) {
+        if (!value || [value isKindOfClass:[NSNull class]]) {
             value = [NSNumber numberWithInt:0];
         }
         // 更新显示

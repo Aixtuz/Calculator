@@ -398,6 +398,9 @@
                                             <constraint firstAttribute="height" constant="35" id="lm0-h7-O4K"/>
                                         </constraints>
                                         <state key="normal" title="T+"/>
+                                        <connections>
+                                            <action selector="testPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="x68-d3-q5l"/>
+                                        </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pLi-Yu-HB7">
                                         <rect key="frame" x="84" y="400" width="64" height="35"/>
@@ -407,6 +410,9 @@
                                             <constraint firstAttribute="height" constant="35" id="tra-9s-SXL"/>
                                         </constraints>
                                         <state key="normal" title="T-"/>
+                                        <connections>
+                                            <action selector="testPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ozF-mU-DP8"/>
+                                        </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yfe-8U-YwG">
                                         <rect key="frame" x="10" y="445" width="286" height="21"/>
@@ -426,6 +432,9 @@
                                             <constraint firstAttribute="width" constant="138" id="nbr-nv-UfB"/>
                                         </constraints>
                                         <state key="normal" title="nil"/>
+                                        <connections>
+                                            <action selector="testPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="0q0-6M-TiT"/>
+                                        </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6Y-GJ-4Yr">
                                         <rect key="frame" x="10" y="40" width="64" height="35"/>
