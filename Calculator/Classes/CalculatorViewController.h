@@ -10,7 +10,7 @@
 
 @interface CalculatorViewController : UIViewController
 
-///  逆波兰式
+///  步骤显示
 @property (weak, nonatomic) IBOutlet UILabel *stepDisplay;
 ///  当前输入
 @property (weak, nonatomic) IBOutlet UILabel *display;

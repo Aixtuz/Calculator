@@ -15,32 +15,24 @@
 
 // 显示运算步骤
 + (NSString *)descriptionOfProgram:(id)program;
-
-// 带参数字典的执行方法
+// 执行带参数的运算步骤
 + (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues;
-
-// 以传入的数组执行运算
+// 执行运算步骤
 + (double)runProgram:(id)program;
-
 // 返回运算所用变量集合
 + (NSSet *)variablesUsedInProgram:(id)program;
-
 // 是否变量
 + (BOOL)isVariable:(id)element;
 
 // 变量入栈
 - (void)pushVariable:(NSString *)variable;
-
-// 入栈
+// 操作数入栈
 - (void)pushOperand:(double)operand;
-
-// 执行运算
+// 带参执行操作
 - (double)performOperation:(NSString *)operation withVariables:(NSDictionary *)variableValues;
-
 // 清空末尾元素
 - (void)clearLast;
-
-// 清空状态
+// 清空模型状态
 - (void)clear;
 
 @end

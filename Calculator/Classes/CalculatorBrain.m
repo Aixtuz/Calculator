@@ -17,6 +17,8 @@
 
 @implementation CalculatorBrain
 
+#pragma mark - Provide data
+
 // 获取操作符信息集合
 + (NSDictionary *)operations {
     
@@ -28,7 +30,6 @@
     NSMutableDictionary *dictM = [NSMutableDictionary dictionary];
     
     // 零元操作符
-    // Hints: 建议使用 dictionaryWithObjectsAndKeys 方法
     [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:zero, @"variableCount", @"π", @"printFormat", nil] forKey:@"π"];
     
     // 一元操作符
@@ -42,20 +43,48 @@
     [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ * %@", @"printFormat", nil] forKey:@"*"];
     [dictM setObject:[NSDictionary dictionaryWithObjectsAndKeys:two, @"variableCount", @"%@ / %@", @"printFormat", nil] forKey:@"/"];
     
-    
     return dictM;
 }
+
+// 返回运算所用变量集合
++ (NSSet *)variablesUsedInProgram:(id)program {
+    
+    NSMutableSet *variables = [NSMutableSet set];
+    
+    // 确认已存在才遍历
+    if ([program isKindOfClass:[NSArray class]]) {
+        
+        // 遍历 Stack, 判断变量存入 NSSet
+        [program enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            
+            if ([CalculatorBrain isVariable:obj]) {
+                [variables addObject:obj];
+            }
+        }];
+    }
+    return variables;
+}
+
+// Getter 运算步骤
+- (id)program {
+    
+    // 取出数组
+    return [self.programStack mutableCopy];
+}
+
+#pragma mark - Prepare description
 
 // 显示运算步骤
 + (NSString *)descriptionOfProgram:(id)program {
     
     NSMutableArray *stack;
     
-    // 确认已存在才赋值, 复制避免改动 stack 属性存储的内容;
+    // 可变复制 stack 数组
     if ([program isKindOfClass:[NSArray class]]) {
         stack = [program mutableCopy];
     }
-    // 取出出栈结果, 过滤最外层括号
+    
+    // 出栈结果, 过滤最外层括号
     NSString *result = [self extremeBrackets:[self descriptionOfTopOfStack:stack]];
     
     // 栈不空,继续出栈
@@ -65,95 +94,116 @@
     return result;
 }
 
-+ (NSString *)extremeBrackets:(NSString *)str {
-    
-    // 首位是括号则舍弃
-    if ([str hasPrefix:@"("] && [str hasSuffix:@")"]) {
-        return [str substringWithRange:NSMakeRange(1, str.length - 2)];
-        
-    } else {
-        // 否则不变
-        return str;
-    }
-}
-
 // 出栈后的判断
 + (NSString *)descriptionOfTopOfStack:(NSMutableArray *)stack {
     
-    // 用于显示纤手操作数和打印结果
+    // 前后操作数和打印结果
     NSString *first, *second, *stepStr;
     
     // 取出栈顶元素
     id element = [stack lastObject];
+    
     if (element) {
+        
         // 成功取出, 则删除
         [stack removeLastObject];
         
-        // 判断是否为操作符, 若是取出操作符对应 元数,格式 信息
+        // 若是操作符, 取出对应: "元数" "格式";
         NSDictionary *operation = [[self operations] objectForKey:element];
-        
-        // 成功取出则为操作符
         if (operation) {
             
-            // 元数(需要操作符前面几位操作数参与计算)
+            // 元数
             int variableCount = [[operation objectForKey:@"variableCount"] intValue];
             // 打印格式
             NSString *format = [operation objectForKey:@"printFormat"];
             
-            // 根据元数, 决定需出栈几位操作数参与运算
+            // 元数决定后续出栈次数
             switch (variableCount) {
+                    
                 case 0:
                     stepStr = format;
                     break;
                     
-                case 1:
+                case 1: {
                     first = [self descriptionOfTopOfStack:stack];
-                    if ([first isEqualToString:@""]) {
+                    if (!first) {
                         first = @"0";
                     }
                     stepStr = [NSString stringWithFormat:format, first];
                     break;
+                }
                     
-                case 2:
+                case 2: {
                     second = [self descriptionOfTopOfStack:stack];
-                    if ([second isEqualToString:@""]) {
+                    if (!second) {
                         second = @"0";
                     }
                     first = [self descriptionOfTopOfStack:stack];
-                    if ([first isEqualToString:@""]) {
+                    if (!first) {
                         first = @"0";
                     }
                     stepStr = [NSString stringWithFormat:format, first, second];
                     break;
+                }
                     
                 default:
                     break;
             }
             
         } else {
-            // operations 取出的字典中无此 key, 则非操作符, 直接打印
+            
+            // operations 无此 key 对应内容, 则非操作符, 直接打印;
             stepStr = [element description];
         }
     }
     return stepStr;
 }
 
+// 过滤最外层括号
++ (NSString *)extremeBrackets:(NSString *)str {
+    
+    // 首尾是括号则舍弃
+    if ([str hasPrefix:@"("] && [str hasSuffix:@")"]) {
+        return [str substringWithRange:NSMakeRange(1, str.length - 2)];
+        
+    } else {
+        
+        // 否则不变
+        return str;
+    }
+}
 
-// 带参数的执行方法
+#pragma mark - Perform function
+
+// 带参执行操作
+- (double)performOperation:(NSString *)operation withVariables:(NSDictionary *)variableValues {
+    
+    // 操作符入栈
+    [self.programStack addObject:operation];
+    
+    // 执行带参运算
+    return [[self class] runProgram:self.program usingVariableValues:variableValues];
+}
+
+// 执行运算步骤
++ (double)runProgram:(id)program {
+    
+    return [self runProgram:program usingVariableValues:nil];
+}
+
+// 执行带参数的运算步骤
 + (double)runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues {
     
     NSMutableArray *stack;
     
-    // 确认已存在才复制, 避免改动 stack 属性存储的内容;
+    // 可变复制 stack 数组
     if ([program isKindOfClass:[NSArray class]]) {
-        // 赋值可变数组, 用于后续出栈计算;
         stack = [program mutableCopy];
     }
     
     // 遍历 Stack
     for (int i = 0; i < stack.count; i++) {
-        
-        // 取出遍历的元素
+  
         id element = [stack objectAtIndex:i];
         
         // 非操作符的字符串 为 变量
@@ -163,10 +213,12 @@
             id value = [variableValues objectForKey:element];
             
             if ([value isKindOfClass:[NSNumber class]]) {
+                
                 // 有值则替换对应值
                 [stack replaceObjectAtIndex:i withObject:value];
                 
             } else {
+                
                 // 无值则替换 0
                 [stack replaceObjectAtIndex:i withObject:[NSNumber numberWithInt:0]];
             }
@@ -175,20 +227,7 @@
     return [self popOfProgramStack:stack];
 }
 
-// 执行操作
-- (double)performOperation:(NSString *)operation withVariables:(NSDictionary *)variableValues {
-    // 入栈
-    [self.programStack addObject:operation];
-    // 计算
-    return [[self class] runProgram:self.program usingVariableValues:variableValues];
-}
-
-// 以传入的数组执行操作
-+ (double)runProgram:(id)program {
-    return [self runProgram:program usingVariableValues:nil];
-}
-
-// 出栈运算;
+// 出栈运算
 + (double)popOfProgramStack:(NSMutableArray *)stack {
     
     double result = 0;
@@ -197,18 +236,20 @@
     id topOfStack = [stack lastObject];
     if (topOfStack) [stack removeLastObject];
     
-    // 操作数, 直接返回
     if ([topOfStack isKindOfClass:[NSNumber class]]) {
+        
+        // 操作数, 直接返回;
         result = [topOfStack doubleValue];
         
     } else if ([topOfStack isKindOfClass:[NSString class]]) {
-        // 操作符, 执行计算
+        
+        // 操作符, 执行计算;
         result = [self calculateOperation:topOfStack withStack:stack];
     }
     return result;
 }
 
-// 从出栈操作中抽取判别操作符的步骤
+// 计算方法
 + (double)calculateOperation:(NSString *)operation withStack:(NSMutableArray *)stack {
     
     double result = 0;
@@ -248,28 +289,14 @@
     return result;
 }
 
-// 返回运算所用变量集合
-+ (NSSet *)variablesUsedInProgram:(id)program {
-    
-    NSMutableSet *variables = [NSMutableSet set];
-    
-    // 确认已存在才遍历
-    if ([program isKindOfClass:[NSArray class]]) {
-        
-        // 遍历 Stack, 判断变量存入 NSSet
-        [program enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            
-            if ([CalculatorBrain isVariable:obj]) {
-                [variables addObject:obj];
-            }
-        }];
-    }
-    return variables;
-}
+///--------------------------------------
+#pragma mark - Help methods
+///--------------------------------------
 
 // 是否变量
 + (BOOL)isVariable:(id)element {
-    // 字符串中非操作符的字母 为 变量
+    
+    // 字符串中非操作符的"字母" 为 变量!
     return [element isKindOfClass:[NSString class]]
     && ([element rangeOfCharacterFromSet:[NSCharacterSet letterCharacterSet]].location != NSNotFound)
     && ![[self operations] objectForKey:element];
@@ -277,33 +304,31 @@
 
 // 变量入栈
 - (void)pushVariable:(NSString *)variable {
+    
     // 变量直接存字符
     [self.programStack addObject:variable];
 }
 
-// 入栈
+// 操作数入栈
 - (void)pushOperand:(double)operand {
+    
     // 操作数存 NSNumber
     [self.programStack addObject:[NSNumber numberWithDouble:operand]];
 }
 
-// 重写 Getter 方法
-- (id)program {
-    // 取出数组
-    return [self.programStack mutableCopy];
-}
-
 // 清空末尾元素
 - (void)clearLast {
+    
     [self.programStack removeLastObject];
 }
 
-// 清空状态
+// 清空模型状态
 - (void)clear {
+    
     [self.programStack removeAllObjects];
 }
 
-#pragma mark - lazy instantiation
+#pragma mark - Lazy instantiation
 
 - (NSMutableArray *)programStack {
     
